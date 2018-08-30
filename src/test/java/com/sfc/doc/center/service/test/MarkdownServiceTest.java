@@ -4,12 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sfc.doc.center.domain.menu.MenuNode;
 import com.sfc.doc.center.domain.menu.MenuNodeGenerator;
+import com.sfc.doc.center.domain.menu.MenuNodeLeafTraversal;
 import com.sfc.doc.center.service.MarkdownService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Iterator;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -40,5 +43,15 @@ public class MarkdownServiceTest {
         ObjectMapper mapper = new ObjectMapper();
         MenuNode menuNode = markdownService.generateMenuFromSummary(md);
         System.out.println(mapper.writeValueAsString(menuNode));
+    }
+
+    @Test
+    public void traversalMenuLeaf() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        MenuNode menuNode = markdownService.generateMenuFromSummary(md);
+        Iterator<MenuNode> iterator = new MenuNodeLeafTraversal(menuNode);
+        while (iterator.hasNext()) {
+            System.out.println(mapper.writeValueAsString(iterator.next()));
+        }
     }
 }

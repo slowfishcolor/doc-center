@@ -34,9 +34,9 @@ public class GitService {
         return localRepoPath;
     }
 
-    private String getRepoName(String gitRepoUrl) {
+    public String getRepoName(String gitRepoUrl) {
         int start = gitRepoUrl.lastIndexOf('/');
-        return gitRepoUrl.substring(start, gitRepoUrl.length() - 5);
+        return gitRepoUrl.substring(start + 1, gitRepoUrl.length() - 4);
     }
 
     /**
