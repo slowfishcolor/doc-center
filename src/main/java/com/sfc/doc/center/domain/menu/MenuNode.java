@@ -1,6 +1,8 @@
 package com.sfc.doc.center.domain.menu;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.commonmark.node.Node;
 
 import java.util.List;
 
@@ -11,11 +13,6 @@ public class MenuNode {
      * menu identity id
      */
     private int id;
-
-    /**
-     * current level menu display order
-     */
-    private int order;
 
     /**
      * Weather this node represent a document or just a path.
@@ -32,12 +29,30 @@ public class MenuNode {
     /**
      * menu node path
      */
-    private String route;
+    private String path;
 
     /**
      * children layer nodes
      */
     private List<MenuNode> children;
+
+    /**
+     * related node
+     */
+    @JsonIgnore
+    private Node node;
+
+    public MenuNode() {
+    }
+
+    public MenuNode(boolean document) {
+        this.document = document;
+    }
+
+    public MenuNode(boolean document, Node node) {
+        this.document = document;
+        this.node = node;
+    }
 
     public int getId() {
         return id;
@@ -45,14 +60,6 @@ public class MenuNode {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
     }
 
     public boolean isDocument() {
@@ -71,12 +78,12 @@ public class MenuNode {
         this.name = name;
     }
 
-    public String getRoute() {
-        return route;
+    public String getPath() {
+        return path;
     }
 
-    public void setRoute(String route) {
-        this.route = route;
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public List<MenuNode> getChildren() {
@@ -85,5 +92,13 @@ public class MenuNode {
 
     public void setChildren(List<MenuNode> children) {
         this.children = children;
+    }
+
+    public Node getNode() {
+        return node;
+    }
+
+    public void setNode(Node node) {
+        this.node = node;
     }
 }
