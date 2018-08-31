@@ -1,5 +1,6 @@
 package com.sfc.doc.center.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sfc.doc.center.domain.menu.MenuNode;
 import com.sfc.doc.center.domain.menu.MenuNodeLeafTraversal;
 import com.sfc.doc.center.domain.task.Task;
@@ -31,7 +32,9 @@ public class ProcessService {
 
     private final BlockingQueue<Task> taskQueue = new LinkedBlockingDeque<>();
 
-    ExecutorService executor;
+    private ExecutorService executor;
+
+    private ObjectMapper mapper;
 
     @Autowired
     private GitService gitService;
@@ -42,6 +45,9 @@ public class ProcessService {
     @Autowired
     private FileService fileService;
 
+    @Autowired
+    private OssService ossService;
+
     public void submitTask(Task task){
         this.taskQueue.offer(task);
     }
@@ -49,6 +55,7 @@ public class ProcessService {
     @PostConstruct
     public void init() {
         executor = Executors.newFixedThreadPool(1);
+        mapper = new ObjectMapper();
     }
 
     private class Processor implements Runnable {
@@ -66,7 +73,7 @@ public class ProcessService {
         String repoName = gitService.getRepoName(task.getGitRepoUrl());
         String localRepoPath = getLocalGitFolder(task.getGitRepoUrl(), serialNumber);
         String outputPath = getLocalOutputPath(localRepoPath);
-        task.setBaseUrl(repoName + "/" + serialNumber + "/output");
+        task.setBaseUrl("/" + repoName + "/" + serialNumber + "/output");
 
         // create folder
         fileService.createFolder(localRepoPath);
@@ -83,6 +90,9 @@ public class ProcessService {
         menu.setPath(task.getBaseUrl());
         task.setMenu(menu);
 
+        // save menu
+        saveMenu(outputPath, menu);
+
         // copy images folder
         fileService.copyFolder(localRepoPath + File.separator + "images", outputPath + File.separator + "images");
 
@@ -95,9 +105,32 @@ public class ProcessService {
             node.setPath(node.getPath() + ".html");
         }
 
+        // upload all files to oss
+        LOGGER.info("uploading files to oss");
+        uploadOutputFiles(outputPath, menu.getPath());
 
         task.setFinish(true);
         LOGGER.info("process finished successfully");
+    }
+
+    private void uploadOutputFiles(String outputPath, String baseUrl) {
+        Iterator<File> fileIterator = fileService.fileIterator(outputPath);
+        while (fileIterator.hasNext()) {
+            File file = fileIterator.next();
+            LOGGER.debug("file: {}", file.getAbsolutePath());
+            LOGGER.debug("relativePath: {}", getFileRelativePath(file.getAbsolutePath(), baseUrl));
+            ossService.uploadFile(getFileRelativePath(file.getAbsolutePath(), baseUrl), file);
+        }
+    }
+
+    private String getFileRelativePath(String absolutePath, String baseUrl) {
+        String replacedString = absolutePath.replace('\\', '/');
+        return replacedString.substring(replacedString.indexOf(baseUrl));
+    }
+
+    private void saveMenu(String filePath, MenuNode menu) throws IOException {
+        String menuJsonString = mapper.writeValueAsString(menu);
+        fileService.writeToFile(filePath + File.separator + "menu.js", menuJsonString);
     }
 
     private void markdownToHtml(String sourceFile, String targetFile) throws IOException {

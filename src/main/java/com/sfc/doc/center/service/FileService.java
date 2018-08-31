@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.util.Iterator;
 
 @Service
 public class FileService {
@@ -33,6 +34,11 @@ public class FileService {
     public void createFolder(String folderPath) {
         File filePath = new File(folderPath);
         filePath.mkdirs();
+    }
+
+    public Iterator<File> fileIterator(String folderPath) {
+        File folder = new File(folderPath);
+        return FileUtils.iterateFiles(folder, new String[] {"html", "jpg", "png", "jpeg", "tiff", "bmp", "js"}, true);
     }
 
 

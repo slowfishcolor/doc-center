@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -36,6 +38,17 @@ public class FileServiceTest {
     @Test
     public void copyFileTest() throws IOException {
         fileService.copyFolder("E:\\doc-temp\\exclusive_cloud_apigatewa\\20180829-191008\\articles\\apigateway\\5-\\images", "E:\\doc-temp\\exclusive_cloud_apigatewa\\20180829-191009\\articles\\apigateway\\5-\\images");
+    }
+
+    @Test
+    public void traversalFileTest() {
+        Iterator<File> fileIterator = fileService.fileIterator("E:\\doc-temp\\doc-template\\20180830-195303\\output");
+        while (fileIterator.hasNext()) {
+            File file = fileIterator.next();
+            System.out.println(file.getName());
+            System.out.println(file.getPath());
+            System.out.println(file.getAbsolutePath());
+        }
     }
 
 }
